@@ -7,11 +7,30 @@ import java.util.ArrayList;
 
 public class CheckListObject implements Parcelable {
     public String title;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public ArrayList<String> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(ArrayList<String> tasks) {
+        this.tasks = tasks;
+    }
+
     public ArrayList<String> tasks;
 
-    CheckListObject() {
-        title = " ";
-        tasks = new ArrayList<>();
+    CheckListObject() {}
+
+    CheckListObject(String name, ArrayList<String> list) {
+        title = name;
+        tasks = list;
     }
 
     protected CheckListObject(Parcel in) {

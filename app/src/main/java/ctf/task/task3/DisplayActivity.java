@@ -28,25 +28,27 @@ public class DisplayActivity extends ActionBarActivity {
 
     private CheckListObject checkListObject = new CheckListObject();
 
+    private DatabaseHelper db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display);
 
+        db = new DatabaseHelper(this);
+
+        String temp = getIntent().getStringExtra("single");
+        checkListObject = db.getList(temp);
+
         mListView = (ListView) findViewById(R.id.display_list);
-        mAdapter = new DisplayAdapter(this, taskList);
+        mAdapter = new DisplayAdapter(this, checkListObject.getTasks());
         mListView.setAdapter(mAdapter);
 
         TextView tV = (TextView) findViewById(R.id.checkListTitle);
+        tV.setText(checkListObject.title);
 
-        Bundle bundle = getIntent().getExtras();
-        if(bundle != null) {
-            checkListObject = bundle.getParcelable("single");
-            taskList = checkListObject.tasks;
-            tV.setText(checkListObject.title);
-            Toast.makeText(this, checkListObject.title, Toast.LENGTH_SHORT).show();
-            updateUI();
-        }
+        db.close();
+
     }
 
     public void updateUI() {
@@ -65,7 +67,7 @@ public class DisplayActivity extends ActionBarActivity {
         switch (item.getItemId()) {
             case R.id.action:
                 Intent myIntent = new Intent(this , Notif.class);
-                myIntent.putExtra("single", checkListObject);
+                myIntent.putExtra("single", checkListObject.title);
                 PendingIntent pendingIntent = PendingIntent.getService(this, 0, myIntent, 0);
 
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -82,81 +84,3 @@ public class DisplayActivity extends ActionBarActivity {
 }
 
 
-class DisplayAdapter implements ListAdapter {
-
-    private ArrayList<String> task;
-    private Context t_context;
-    private LayoutInflater inflater;
-
-    DisplayAdapter(Context context, ArrayList<String> updatedList){
-        t_context = context;
-        inflater = (LayoutInflater) t_context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        task = updatedList;
-    }
-
-    @Override
-    public boolean areAllItemsEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean isEnabled(int position) {
-        return false;
-    }
-
-    @Override
-    public void registerDataSetObserver(DataSetObserver observer) {
-
-    }
-
-    @Override
-    public void unregisterDataSetObserver(DataSetObserver observer) {
-
-    }
-
-    @Override
-    public int getCount() {
-        return task.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return task.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
-
-    @Override
-    public boolean hasStableIds() {
-        return false;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-
-        convertView = inflater.inflate(R.layout.list_item_display, parent, false);
-
-        CheckedTextView taskName = (CheckedTextView) convertView.findViewById(R.id.taskName);
-        taskName.setText(task.get(position));
-
-        return convertView;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return 1;
-    }
-
-    @Override
-    public int getViewTypeCount() {
-        return 1;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return false;
-    }
-}

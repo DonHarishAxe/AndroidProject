@@ -1,5 +1,6 @@
 package ctf.task.task3;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -18,13 +19,17 @@ public class Notif extends Service {
                         .setSmallIcon(R.drawable.ic_launcher)
                         .setContentTitle("My notification")
                         .setContentText("Hello World!");
+
         Intent openList = new Intent(this, DisplayActivity.class);
-        openList.putExtra("single", intent.getParcelableExtra("single"));
+        openList.putExtra("single", intent.getStringExtra("single"));
+
         PendingIntent resultPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, openList, 0);
+
         mBuilder.setContentIntent(resultPendingIntent);
+
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-// mId allows you to update the notification later on.
         mNotificationManager.notify(100, mBuilder.build());
+
         return START_NOT_STICKY;
     }
 
