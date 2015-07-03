@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.DataSetObserver;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -42,6 +43,29 @@ public class CreateNewList extends ActionBarActivity {
 
         editText = (EditText) findViewById(R.id.checkListName);
         title = editText.toString();
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addTask);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                builder.setTitle("Add a task");
+                final EditText inputField = new EditText(getApplicationContext());
+                builder.setView(inputField);
+                builder.setPositiveButton("Add",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                String task = inputField.getText().toString();
+                                taskList.add(task);
+                                updateUI();
+                            }
+                        });
+
+                builder.setNegativeButton("Cancel", null);
+                builder.create().show();
+            }
+        });
     }
 
     public void updateUI() {
@@ -81,25 +105,6 @@ public class CreateNewList extends ActionBarActivity {
                 Intent noList = new Intent(this, HomeActivity.class);
                 startActivity(noList);
                 finish();
-                return true;
-            case R.id.addNew:
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Add a task");
-                builder.setMessage("What do you want to do?");
-                final EditText inputField = new EditText(this);
-                builder.setView(inputField);
-                builder.setPositiveButton("Add",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                String task = inputField.getText().toString();
-                                taskList.add(task);
-                                updateUI();
-                            }
-                        });
-
-                builder.setNegativeButton("Cancel", null);
-                builder.create().show();
                 return true;
             case R.id.action_settings:
                 return true;

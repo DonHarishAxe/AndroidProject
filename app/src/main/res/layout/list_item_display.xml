@@ -12,8 +12,8 @@
         android:id="@+id/taskName"
         android:text="Demo"
         android:textSize="20sp"
-        android:textColor="#FFFFFFFF"
-        android:checked="false"
+        android:textColor="#FFF"
+        android:checkMark="@drawable/check"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

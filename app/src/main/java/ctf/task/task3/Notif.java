@@ -17,8 +17,8 @@ public class Notif extends Service {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("My notification")
-                        .setContentText("Hello World!");
+                        .setContentTitle(intent.getStringExtra("single"))
+                        .setContentText("This task is to be completed");
 
         Intent openList = new Intent(this, DisplayActivity.class);
         openList.putExtra("single", intent.getStringExtra("single"));
@@ -26,6 +26,7 @@ public class Notif extends Service {
         PendingIntent resultPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, openList, 0);
 
         mBuilder.setContentIntent(resultPendingIntent);
+        mBuilder.setAutoCancel(true);
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(100, mBuilder.build());

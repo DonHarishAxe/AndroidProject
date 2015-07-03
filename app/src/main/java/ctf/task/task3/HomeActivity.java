@@ -1,10 +1,9 @@
 package ctf.task.task3;
 
 import android.content.Intent;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -32,6 +31,15 @@ public class HomeActivity extends ActionBarActivity {
         mAdapter = new CheckList(this, checkListObjects);
         mListView.setAdapter(mAdapter);
 
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.myFAB);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent createNewList = new Intent(getApplicationContext(), CreateNewList.class);
+                startActivity(createNewList);
+            }
+        });
+
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -52,21 +60,6 @@ public class HomeActivity extends ActionBarActivity {
         mListView.setAdapter(mAdapter);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_home, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_settings) {
-            Intent createNewList = new Intent(this, CreateNewList.class);
-            //createNewList.putParcelableArrayListExtra("object", checkListObjects);
-            startActivity(createNewList);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 }
 

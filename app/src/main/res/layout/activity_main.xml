@@ -1,6 +1,6 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,7 +8,8 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="#FF003B6F">
 
     <TextView
         android:id="@+id/checkList"
@@ -17,38 +18,67 @@
         android:textColor="#FF000000"
         android:textStyle="bold"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+         />
 
     <EditText
         android:id="@+id/checkListName"
         android:inputType="text"
-        android:layout_marginTop="10dp"
+        android:layout_below="@id/checkList"
         android:hint="Enter name for checklist"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        />
 
     <Space
+        android:id="@+id/space"
+        android:layout_below="@id/checkListName"
         android:layout_width="fill_parent"
-        android:layout_height="25dp" />
+        android:layout_height="30dp"
+        />
 
     <TextView
+        android:id="@+id/items"
+        android:layout_below="@id/space"
         android:text="Items"
         android:textSize="20sp"
         android:textColor="#FF000000"
         android:textStyle="bold"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        />
 
     <Space
+        android:id="@+id/space1"
+        android:layout_below="@id/items"
         android:layout_width="fill_parent"
-        android:layout_height="20dp" />
+        android:layout_height="20dp"
+        android:layout_alignParentLeft="true"
+         />
 
     <ListView
         android:id="@+id/listView"
+        android:layout_below="@id/space1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
         </ListView>
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/addTask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/plus"
+        app:backgroundTint="#F44336"
+        app:elevation="6dp"
+        app:borderWidth="0dp"
+        android:layout_marginBottom="24dp"
+        android:layout_marginRight="24dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        />
 
 
-</LinearLayout>
+</RelativeLayout>

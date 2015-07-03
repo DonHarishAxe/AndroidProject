@@ -17,11 +17,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Database Name
     private static final String DATABASE_NAME = "Task3";
 
-    // Contacts table name
+    // Tables name
     private static final String TABLE_LISTNAMES = "listnames";
     private static final String TABLE_LISTS = "lists";
 
-    // Contacts Table Columns names
+    // Table Columns names
     private static final String KEY_ID_1 = "id";
     private static final String KEY_ID_2 = "id";
     private static final String KEY_LISTNAME = "name";
@@ -123,5 +123,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.close();
         return new CheckListObject(title, temp);
+    }
+
+    public void deleteListName(String name) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selection = KEY_LISTNAME + " LIKE ?";
+        String[] selectionArgs = { name };
+
+        db.delete(TABLE_LISTNAMES, selection, selectionArgs);
+        db.close();
     }
 }
