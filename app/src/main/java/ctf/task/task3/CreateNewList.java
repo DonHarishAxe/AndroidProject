@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -48,9 +49,9 @@ public class CreateNewList extends ActionBarActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                AlertDialog.Builder builder = new AlertDialog.Builder(CreateNewList.this);
                 builder.setTitle("Add a task");
-                final EditText inputField = new EditText(getApplicationContext());
+                final EditText inputField = new EditText(CreateNewList.this);
                 builder.setView(inputField);
                 builder.setPositiveButton("Add",
                         new DialogInterface.OnClickListener() {
@@ -94,12 +95,18 @@ public class CreateNewList extends ActionBarActivity {
         switch (item.getItemId()) {
             case R.id.done:
                 title = editText.getText().toString();
-                db.addListName(new CheckListObject(title, taskList));
-                db.addList(new CheckListObject(title, taskList));
-                db.close();
-                Intent sendData = new Intent(this, HomeActivity.class);
-                startActivity(sendData);
-                finish();
+                if(title == null)
+                    Toast.makeText(this, "Enter a name for the list", Toast.LENGTH_SHORT).show();
+                else if(taskList.size() == 0)
+                    Toast.makeText(this, "No tasks created", Toast.LENGTH_SHORT).show();
+                else {
+                    db.addListName(new CheckListObject(title, taskList));
+                    db.addList(new CheckListObject(title, taskList));
+                    db.close();
+                    Intent sendData = new Intent(this, HomeActivity.class);
+                    startActivity(sendData);
+                    finish();
+                }
                 return true;
             case R.id.cancel:
                 Intent noList = new Intent(this, HomeActivity.class);

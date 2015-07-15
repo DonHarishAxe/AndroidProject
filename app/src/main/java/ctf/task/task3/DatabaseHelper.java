@@ -12,7 +12,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Database Name
     private static final String DATABASE_NAME = "Task3";
@@ -22,8 +22,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_LISTS = "lists";
 
     // Table Columns names
-    private static final String KEY_ID_1 = "id";
-    private static final String KEY_ID_2 = "id";
+    private static final String ID_1 = "_id";
+    private static final String ID_2 = "_id";
     private static final String KEY_LISTNAME = "name";
     private static final String KEY_TITLE = "c1_name";
     private static final String KEY_TASK = "task";
@@ -36,10 +36,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String CREATE_TABLE_1 = "CREATE TABLE " + TABLE_LISTNAMES + "("
-                + KEY_ID_1 + " INTEGER PRIMARY KEY," + KEY_LISTNAME + " TEXT " + ")";
+                + ID_1 + " INTEGER PRIMARY KEY," + KEY_LISTNAME + " TEXT " + ")";
 
         String CREATE_TABLE_2 = "CREATE TABLE " + TABLE_LISTS + "("
-                + KEY_ID_2 + " INTEGER PRIMARY KEY," + KEY_TITLE + " TEXT,"
+                + ID_2 + " INTEGER PRIMARY KEY," + KEY_TITLE + " TEXT,"
                 + KEY_TASK + " TEXT" + ")";
 
         db.execSQL(CREATE_TABLE_1);
@@ -104,6 +104,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return taskNames;
     }
 
+    public int getId(String temp) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] projection = {ID_1, KEY_LISTNAME };
+        String selection = KEY_LISTNAME + " LIKE ? ";
+        String[] selectionArgs = { temp };
+
+        Cursor c = db.query(TABLE_LISTNAMES, projection, selection, selectionArgs, null, null, null);
+
+        if(c.moveToFirst()){
+            return c.getInt(1);
+        }
+        else return 0;
+    }
     public CheckListObject getList(String title) {
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -125,13 +139,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return new CheckListObject(title, temp);
     }
 
+    public void deleteTask(String task) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "DELETE FROM " + TABLE_LISTS + " WHERE " + KEY_TASK + " LIKE " + '\'' + task + '\'';
+        String selection = KEY_TASK + " LIKE ?";
+        String[] selectionArgs = { task };
+
+        db.execSQL(query);
+        //db.delete(TABLE_LISTS, selection, selectionArgs);
+        db.close();
+
+    }
     public void deleteListName(String name) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         String selection = KEY_LISTNAME + " LIKE ?";
         String[] selectionArgs = { name };
+        String query = "DELETE FROM " + TABLE_LISTNAMES + " WHERE " + KEY_LISTNAME + " LIKE " + '\'' + name + '\'';
 
-        db.delete(TABLE_LISTNAMES, selection, selectionArgs);
+        db.execSQL(query);
         db.close();
     }
 }

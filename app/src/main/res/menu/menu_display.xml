@@ -2,9 +2,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context="ctf.task.task3.DisplayActivity">
 
-    <item android:id="@+id/action" android:title="Notify"
-        android:orderInCategory="2" app:showAsAction="always" />
+    <item android:id="@+id/action"
+        android:icon="@drawable/alarm"
+        android:title="Notify"
+        android:orderInCategory="2"
+        app:showAsAction="always" />
 
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/delete"
+        android:title="Delete"
+        android:orderInCategory="3"
+        app:showAsAction="always" />
+
 </menu>

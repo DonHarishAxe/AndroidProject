@@ -1,6 +1,7 @@
 package ctf.task.task3;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -45,10 +47,13 @@ public class HomeActivity extends ActionBarActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView name = (TextView) view.findViewById(R.id.titleName);
                 String s = name.getText().toString();
-
-                Intent disp = new Intent(getApplicationContext(), DisplayActivity.class);
+                DatabaseHelper temp = new DatabaseHelper(HomeActivity.this);
+                CheckListObject c = temp.getList(s);
+                Toast.makeText(HomeActivity.this, s, Toast.LENGTH_LONG).show();
+                Intent disp = new Intent(HomeActivity.this, DisplayActivity.class);
                 disp.putExtra("single", s);
                 startActivity(disp);
+                //finish();
             }
         });
 
@@ -60,6 +65,16 @@ public class HomeActivity extends ActionBarActivity {
         mListView.setAdapter(mAdapter);
     }
 
+    public void cleanDatabase(String name) {
+        CheckListObject s = db.getList(name);
+        if(s.getTasks().size() == 0) {
+            db.deleteListName(name);
+            checkListObjects.remove(name);
+            updateUI();
+        }
+
+
+    }
 
 }
 
