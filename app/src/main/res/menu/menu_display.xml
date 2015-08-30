@@ -9,6 +9,7 @@
         app:showAsAction="always" />
 
     <item android:id="@+id/delete"
+        android:icon="@drawable/delete"
         android:title="Delete"
         android:orderInCategory="3"
         app:showAsAction="always" />

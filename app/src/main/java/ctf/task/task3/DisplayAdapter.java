@@ -15,11 +15,13 @@ public class DisplayAdapter implements ListAdapter {
     private ArrayList<String> task;
     private Context t_context;
     private LayoutInflater inflater;
+    private Boolean done;
 
-    DisplayAdapter(Context context, ArrayList<String> updatedList){
+    DisplayAdapter(Context context, ArrayList<String> updatedList, boolean isDone){
         t_context = context;
         inflater = (LayoutInflater) t_context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         task = updatedList;
+        done = isDone;
     }
 
     @Override
@@ -29,7 +31,7 @@ public class DisplayAdapter implements ListAdapter {
 
     @Override
     public boolean isEnabled(int position) {
-        return false;
+        return true;
     }
 
     @Override
@@ -61,6 +63,13 @@ public class DisplayAdapter implements ListAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
+        if(done){
+            convertView = inflater.inflate(R.layout.list_item_display_done, parent, false);
+            TextView oldName = (TextView) convertView.findViewById(R.id.name);
+            oldName.setText(task.get(position));
+
+            return convertView;
+        }
         convertView = inflater.inflate(R.layout.list_item_display, parent, false);
 
         TextView taskName = (TextView) convertView.findViewById(R.id.taskName);

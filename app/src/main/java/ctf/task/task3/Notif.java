@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
@@ -25,7 +24,7 @@ public class Notif extends Service {
                         .setContentTitle(temp)
                         .setColor(getResources().getColor(android.R.color.holo_blue_light))
                         .setAutoCancel(true)
-                        .setContentText("This task is to be completed");
+                        .setContentText("These task(s) have to be completed");
 
         Intent openList = new Intent(this, DisplayActivity.class);
         openList.putExtra("single", temp);
@@ -41,7 +40,6 @@ public class Notif extends Service {
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(t, mBuilder.build());
 
-        Toast.makeText(this, intent.getStringExtra("single"), Toast.LENGTH_SHORT).show();
         return START_NOT_STICKY;
     }
 

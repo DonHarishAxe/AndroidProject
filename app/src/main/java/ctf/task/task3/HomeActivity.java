@@ -1,7 +1,6 @@
 package ctf.task.task3;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -29,9 +28,28 @@ public class HomeActivity extends ActionBarActivity {
         db = new DatabaseHelper(this);
         checkListObjects = db.getListNames();
 
-        mListView = (ListView) findViewById(R.id.mainListView);
-        mAdapter = new CheckList(this, checkListObjects);
-        mListView.setAdapter(mAdapter);
+        if(checkListObjects.size() == 0)
+            setContentView(R.layout.activity_display_empty);
+        else {
+            mListView = (ListView) findViewById(R.id.mainListView);
+            mAdapter = new CheckList(this, checkListObjects);
+            mListView.setAdapter(mAdapter);
+
+            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    TextView name = (TextView) view.findViewById(R.id.titleName);
+                    String s = name.getText().toString();
+                    DatabaseHelper temp = new DatabaseHelper(HomeActivity.this);
+                    CheckListObject c = temp.getOldList(s);
+                    Toast.makeText(HomeActivity.this, s, Toast.LENGTH_LONG).show();
+                    Intent disp = new Intent(HomeActivity.this, DisplayActivity.class);
+                    disp.putExtra("single", s);
+                    startActivity(disp);
+                    //finish();
+                }
+            });
+        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.myFAB);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -41,22 +59,6 @@ public class HomeActivity extends ActionBarActivity {
                 startActivity(createNewList);
             }
         });
-
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView name = (TextView) view.findViewById(R.id.titleName);
-                String s = name.getText().toString();
-                DatabaseHelper temp = new DatabaseHelper(HomeActivity.this);
-                CheckListObject c = temp.getList(s);
-                Toast.makeText(HomeActivity.this, s, Toast.LENGTH_LONG).show();
-                Intent disp = new Intent(HomeActivity.this, DisplayActivity.class);
-                disp.putExtra("single", s);
-                startActivity(disp);
-                //finish();
-            }
-        });
-
         db.close();
     }
 
@@ -66,7 +68,7 @@ public class HomeActivity extends ActionBarActivity {
     }
 
     public void cleanDatabase(String name) {
-        CheckListObject s = db.getList(name);
+        CheckListObject s = db.getOldList(name);
         if(s.getTasks().size() == 0) {
             db.deleteListName(name);
             checkListObjects.remove(name);

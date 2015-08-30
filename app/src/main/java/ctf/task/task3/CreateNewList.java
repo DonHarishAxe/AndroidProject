@@ -101,7 +101,7 @@ public class CreateNewList extends ActionBarActivity {
                     Toast.makeText(this, "No tasks created", Toast.LENGTH_SHORT).show();
                 else {
                     db.addListName(new CheckListObject(title, taskList));
-                    db.addList(new CheckListObject(title, taskList));
+                    db.addNewList(new CheckListObject(title, taskList));
                     db.close();
                     Intent sendData = new Intent(this, HomeActivity.class);
                     startActivity(sendData);

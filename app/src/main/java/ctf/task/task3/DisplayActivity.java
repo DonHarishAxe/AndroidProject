@@ -6,12 +6,14 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.graphics.Color;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -23,12 +25,14 @@ import java.util.Calendar;
 
 public class DisplayActivity extends ActionBarActivity {
 
-    private CheckListObject checkListObject = new CheckListObject();
-    private ArrayList<String> localCache = new ArrayList<>();
+    private CheckListObject checkListObjectOld = new CheckListObject();
+    private CheckListObject checkListObjectNew = new CheckListObject();
+    private ArrayList<String> localNewCache = new ArrayList<>();
+    private ArrayList<String> localOldCache = new ArrayList<>();
 
-    Runner r = new Runner();
     private Calendar calendar;
     private int notifID = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,26 +43,105 @@ public class DisplayActivity extends ActionBarActivity {
         calendar = Calendar.getInstance();
 
         String temp  = getIntent().getStringExtra("single");
-         if(temp == null) { Toast.makeText(this, "NULL", Toast.LENGTH_LONG).show(); return;}
-        checkListObject = db.getList(temp);
+        checkListObjectNew = db.getNewList(temp);
+        checkListObjectOld = db.getOldList(temp);
+
+        localNewCache = checkListObjectNew.getTasks();
+        localOldCache = checkListObjectOld.getTasks();
+
+        if(localNewCache.size() == 0 && localOldCache.size() == 0) {
+            setContentView(R.layout.activity_display_empty);
+            db.close();
+            return;
+        }
         notifID = db.getId(temp);
 
-        ListView mListView = (ListView) findViewById(R.id.display_list);
-        localCache = checkListObject.getTasks();
-        DisplayAdapter mAdapter = new DisplayAdapter(this, localCache);
-        mListView.setAdapter(mAdapter);
+        ListView newListView = (ListView) findViewById(R.id.display_list);
 
+        DisplayAdapter pendingTaskAdapter = new DisplayAdapter(this, localNewCache, false);
+        newListView.setAdapter(pendingTaskAdapter);
+        newListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView t = (TextView) view.findViewById(R.id.taskName);
+                String s = t.getText().toString();
+                doneTask(s);
+            }
+        });
+
+        newListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView t = (TextView) view.findViewById(R.id.taskName);
+                String s = t.getText().toString();
+                createDeleteDialog(s).show();
+
+                return true;
+            }
+        });
+
+        ListView doneListView = (ListView) findViewById(R.id.display_done_list);
+
+        DisplayAdapter doneTaskAdapter = new DisplayAdapter(this, localOldCache, true);
+        doneListView.setAdapter(doneTaskAdapter);
+        doneListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView t = (TextView) view.findViewById(R.id.name);
+                String s = t.getText().toString();
+                undoTask(s);
+            }
+        });
+
+        doneListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView t = (TextView) view.findViewById(R.id.name);
+                String s = t.getText().toString();
+                createDeleteDialog(s).show();
+
+                return true;
+            }
+        });
         TextView tV = (TextView) findViewById(R.id.checkListTitle);
-        tV.setText(checkListObject.title);
+        tV.setText(checkListObjectNew.title);
 
-        Toast.makeText(this, checkListObject.title, Toast.LENGTH_LONG).show();
         db.close();
     }
 
+    public AlertDialog createDeleteDialog(String task) {
+        AlertDialog.Builder alb = new AlertDialog.Builder(this);
+        alb.setMessage("Delete Task");
+        TextView tV = new TextView(this);
+        tV.setText("Do you want to delete this task?");
+        tV.setTextSize(16);
+        tV.setPadding(5,0,5,0);
+        tV.setTextColor(Color.BLACK);
+        tV.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        alb.setView(tV);
+
+        final String temp = task;
+
+        alb.setCancelable(true);
+        alb.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteTask(temp);
+            }
+        });
+
+        alb.setNegativeButton("No", null);
+
+        return alb.create();
+    }
     public void updateUI() {
         ListView mListView = (ListView) this.findViewById(R.id.display_list);
-        DisplayAdapter mAdapter = new DisplayAdapter(this, localCache);
-        mListView.setAdapter(mAdapter);
+        DisplayAdapter pendingTaskAdapter = new DisplayAdapter(this, localNewCache, false);
+        mListView.setAdapter(pendingTaskAdapter);
+
+        ListView doneListView = (ListView) findViewById(R.id.display_done_list);
+        DisplayAdapter doneTaskAdapter = new DisplayAdapter(this, localOldCache, true);
+        doneListView.setAdapter(doneTaskAdapter);
     }
 
     @Override
@@ -91,60 +174,68 @@ public class DisplayActivity extends ActionBarActivity {
         builder.create().show();
     }
 
-    public void deleteTask(View v) {
-        View view = (View) v.getParent();
-        TextView t = (TextView) view.findViewById(R.id.taskName);
-        String temp = t.getText().toString();
+    public void deleteTask(String temp) {
+        DatabaseHelper db = new DatabaseHelper(DisplayActivity.this);
+        db.deleteNewTask(temp);
+        db.deleteOldTask(temp);
+
+        localOldCache.remove(temp);
+        localNewCache.remove(temp);
+        updateUI();
+
+        db.close();
+    }
+    public void doneTask(String temp) {
+        //View view = (View) v.getParent();
+        //TextView t = (TextView) view.findViewById(R.id.taskName);
+        //String temp = t.getText().toString();
 
         DatabaseHelper db = new DatabaseHelper(DisplayActivity.this);
-        db.deleteTask(temp);
+        db.deleteNewTask(temp);
+
+        ArrayList<String> singleItem = new ArrayList<>();
+        singleItem.add(temp);
+
+        db.addOldList(new CheckListObject(checkListObjectNew.title, singleItem));
         db.close();
 
+        localNewCache.remove(temp);
+        localOldCache.add(temp);
         updateUI();
-      /*  localCache.remove(temp);
-        DatabaseHelper db = new DatabaseHelper(getApplicationContext());
-        db.deleteTask(temp);
+    }
 
-      /*  if(localCache.size() == 0) {
-            db.deleteListName(temp);
-            //db.close();
-            startActivity(new Intent(getApplicationContext(), HomeActivity.class));
-            removeAlarm();
+    public void undoTask(String temp) {
+        //View view = (View) v.getParent();
+        //TextView t = (TextView) view.findViewById(R.id.taskName);
+        //String temp = t.getText().toString();
 
-        } else {
-            db.close();
-            updateUI();
-        }*/
+        DatabaseHelper db = new DatabaseHelper(DisplayActivity.this);
+        db.deleteOldTask(temp);
+
+        ArrayList<String> singleItem = new ArrayList<>();
+        singleItem.add(temp);
+
+        db.addNewList(new CheckListObject(checkListObjectOld.title, singleItem));
+        db.close();
+
+        localNewCache.add(temp);
+        localOldCache.remove(temp);
+        updateUI();
     }
 
     public void deleteList() {
 
-        TextView tV = (TextView) findViewById(R.id.checkListTitle);
-        String temp = tV.getText().toString();
+        String temp = checkListObjectNew.title;
+
         DatabaseHelper db = new DatabaseHelper(DisplayActivity.this);
         db.deleteListName(temp);
         db.close();
 
-       // updateUI();
-      /*  localCache.remove(temp);
-        DatabaseHelper db = new DatabaseHelper(getApplicationContext());
-        db.deleteTask(temp);
-
-      /*  if(localCache.size() == 0) {
-            db.deleteListName(temp);
-            //db.close();
-            startActivity(new Intent(getApplicationContext(), HomeActivity.class));
-            removeAlarm();
-
-        } else {
-            db.close();
-            updateUI();
-        }*/
     }
 
     public void setAlarm() {
         Intent myIntent = new Intent(this , Notif.class);
-        myIntent.putExtra("single", checkListObject);
+        myIntent.putExtra("single", checkListObjectNew.title);
         myIntent.putExtra("id", notifID);
         PendingIntent pendingIntent = PendingIntent.getService(this, notifID, myIntent, 0);
 
@@ -156,7 +247,7 @@ public class DisplayActivity extends ActionBarActivity {
 
     public void removeAlarm() {
         Intent myIntent = new Intent(this , Notif.class);
-        myIntent.putExtra("single", checkListObject);
+        myIntent.putExtra("single", checkListObjectNew.title);
         myIntent.putExtra("id", notifID);
         PendingIntent pendingIntent = PendingIntent.getService(this, notifID, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -170,7 +261,6 @@ public class DisplayActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action:
-
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Set date");
 
@@ -195,37 +285,15 @@ public class DisplayActivity extends ActionBarActivity {
                 builder.create().show();
 
                 return true;
+
             case R.id.delete:
+                deleteList();
+                removeAlarm();
+                startActivity(new Intent(this, HomeActivity.class));
 
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private class Runner extends AsyncTask<String, String, String> {
-
-        @Override
-        protected String doInBackground(String... params) {
-            String task = params[1];
-
-            DatabaseHelper db = new DatabaseHelper(DisplayActivity.this);
-
-            if(task.equals("delete_task")) db.deleteTask(params[0]);
-            else if(task.equals("delete_list")) db.deleteListName(params[0]);
-
-            db.close();
-
-
-            if(isCancelled()) return null;
-            return task;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            DisplayActivity disp = new DisplayActivity();
-            disp.updateUI();
-
         }
     }
 }

@@ -9,7 +9,8 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".MainActivity"
-    android:background="#FF003B6F">
+
+    >
 
     <TextView
         android:id="@+id/checkList"
@@ -71,8 +72,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/plus"
-        app:backgroundTint="#D1FF0000"
-        app:elevation="8dp"
+        app:backgroundTint="#FF003B6F"
+        app:elevation="14dp"
         app:borderWidth="0dp"
         android:layout_marginBottom="24dp"
         android:layout_marginRight="24dp"

@@ -12,20 +12,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 1;
 
     // Database Name
-    private static final String DATABASE_NAME = "Task3";
+    private static final String DATABASE_NAME = "k16";
 
     // Tables name
     private static final String TABLE_LISTNAMES = "listnames";
-    private static final String TABLE_LISTS = "lists";
+    private static final String TABLE_LISTS_NEW = "new_list";
+    private static final String TABLE_LISTS_DONE = "done_list";
 
     // Table Columns names
-    private static final String ID_1 = "_id";
-    private static final String ID_2 = "_id";
-    private static final String KEY_LISTNAME = "name";
-    private static final String KEY_TITLE = "c1_name";
+    private static final String ID = "_id";
+    private static final String KEY_NAME = "name";
     private static final String KEY_TASK = "task";
 
     public DatabaseHelper(Context context) {
@@ -36,14 +35,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String CREATE_TABLE_1 = "CREATE TABLE " + TABLE_LISTNAMES + "("
-                + ID_1 + " INTEGER PRIMARY KEY," + KEY_LISTNAME + " TEXT " + ")";
+                + ID + " INTEGER PRIMARY KEY," + KEY_NAME + " TEXT " + ")";
 
-        String CREATE_TABLE_2 = "CREATE TABLE " + TABLE_LISTS + "("
-                + ID_2 + " INTEGER PRIMARY KEY," + KEY_TITLE + " TEXT,"
+        String CREATE_TABLE_2 = "CREATE TABLE " + TABLE_LISTS_NEW + "("
+                + ID + " INTEGER PRIMARY KEY," + KEY_NAME + " TEXT,"
+                + KEY_TASK + " TEXT" + ")";
+
+        String CREATE_TABLE_3 = "CREATE TABLE " + TABLE_LISTS_DONE + "("
+                + ID + " INTEGER PRIMARY KEY," + KEY_NAME + " TEXT,"
                 + KEY_TASK + " TEXT" + ")";
 
         db.execSQL(CREATE_TABLE_1);
         db.execSQL(CREATE_TABLE_2);
+        db.execSQL(CREATE_TABLE_3);
     }
 
     // Upgrading database
@@ -51,46 +55,61 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_LISTNAMES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LISTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LISTS_NEW);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LISTS_DONE);
 
         // Create tables again
         onCreate(db);
     }
 
-
     public void addListName(CheckListObject checkListObject) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_LISTNAME, checkListObject.getTitle()); // Contact Name
+        values.put(KEY_NAME, checkListObject.getTitle()); // Contact Name
 
         // Inserting Row
         db.insert(TABLE_LISTNAMES, null, values);
         db.close(); // Closing database connection
     }
 
-    public void addList(CheckListObject checkListObject) {
+    public void addNewList(CheckListObject checkListObject) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ArrayList<String> st = checkListObject.getTasks();
 
         for(int i = 0; i < st.size(); i++) {
             ContentValues values = new ContentValues();
-            values.put(KEY_TITLE, checkListObject.getTitle()); // Contact Name
+            values.put(KEY_NAME, checkListObject.getTitle()); // Contact Name
             values.put(KEY_TASK, st.get(i));
 
-            db.insert(TABLE_LISTS, null, values);
+            db.insert(TABLE_LISTS_NEW, null, values);
         }
 
         db.close(); // Closing database connection
     }
 
+    public void addOldList(CheckListObject checkListObject) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ArrayList<String> st = checkListObject.getTasks();
+
+        for(int i = 0; i < st.size(); i++) {
+            ContentValues values = new ContentValues();
+            values.put(KEY_NAME, checkListObject.getTitle()); // Contact Name
+            values.put(KEY_TASK, st.get(i));
+
+            db.insert(TABLE_LISTS_DONE, null, values);
+        }
+
+        db.close(); // Closing database connection
+    }
     public ArrayList<String> getListNames() {
         SQLiteDatabase db = this.getReadableDatabase();
 
         ArrayList<String> taskNames = new ArrayList<>();
 
-        String[] projection = { KEY_LISTNAME };
+        String[] projection = { KEY_NAME };
 
         Cursor c = db.query(TABLE_LISTNAMES, projection, null, null, null, null ,null);
 
@@ -107,8 +126,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public int getId(String temp) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String[] projection = {ID_1, KEY_LISTNAME };
-        String selection = KEY_LISTNAME + " LIKE ? ";
+        String[] projection = {ID, KEY_NAME };
+        String selection = KEY_NAME + " LIKE ? ";
         String[] selectionArgs = { temp };
 
         Cursor c = db.query(TABLE_LISTNAMES, projection, selection, selectionArgs, null, null, null);
@@ -118,16 +137,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         else return 0;
     }
-    public CheckListObject getList(String title) {
+
+    public CheckListObject getOldList(String title) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         ArrayList<String> temp = new ArrayList<>();
 
-        String[] projection = { KEY_TITLE, KEY_TASK };
-        String selection =  KEY_TITLE + " LIKE ? ";
+        String[] projection = { KEY_NAME, KEY_TASK };
+        String selection =  KEY_NAME + " LIKE ? ";
         String[] selectionArgs = { title };
 
-        Cursor c = db.query( TABLE_LISTS, projection, selection, selectionArgs, null, null, null);
+        Cursor c = db.query(TABLE_LISTS_DONE, projection, selection, selectionArgs, null, null, null);
 
         if(c.moveToFirst()) {
             do{
@@ -139,26 +159,59 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return new CheckListObject(title, temp);
     }
 
-    public void deleteTask(String task) {
+    public CheckListObject getNewList(String title) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String query = "DELETE FROM " + TABLE_LISTS + " WHERE " + KEY_TASK + " LIKE " + '\'' + task + '\'';
+        ArrayList<String> temp = new ArrayList<>();
+
+        String[] projection = { KEY_NAME, KEY_TASK };
+        String selection =  KEY_NAME + " LIKE ? ";
+        String[] selectionArgs = { title };
+
+        Cursor c = db.query(TABLE_LISTS_NEW, projection, selection, selectionArgs, null, null, null);
+
+        if(c.moveToFirst()) {
+            do{
+                temp.add(c.getString(1));
+            }while(c.moveToNext());
+        }
+
+        db.close();
+        return new CheckListObject(title, temp);
+    }
+
+
+    public void deleteNewTask(String task) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
         String selection = KEY_TASK + " LIKE ?";
         String[] selectionArgs = { task };
 
-        db.execSQL(query);
-        //db.delete(TABLE_LISTS, selection, selectionArgs);
+        db.delete(TABLE_LISTS_NEW, selection, selectionArgs);
         db.close();
-
     }
+
+    public void deleteOldTask(String task){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selection = KEY_TASK + " LIKE ?";
+        String[] selectionArgs = { task };
+
+        db.delete(TABLE_LISTS_DONE, selection, selectionArgs);
+        db.close();
+    }
+
+
     public void deleteListName(String name) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String selection = KEY_LISTNAME + " LIKE ?";
+        String selection = KEY_NAME + " LIKE ?";
         String[] selectionArgs = { name };
-        String query = "DELETE FROM " + TABLE_LISTNAMES + " WHERE " + KEY_LISTNAME + " LIKE " + '\'' + name + '\'';
 
-        db.execSQL(query);
+        db.delete(TABLE_LISTNAMES, selection, selectionArgs);
+        db.delete(TABLE_LISTS_DONE, selection, selectionArgs);
+        db.delete(TABLE_LISTS_NEW, selection, selectionArgs);
+
         db.close();
-    }
+   }
 }
