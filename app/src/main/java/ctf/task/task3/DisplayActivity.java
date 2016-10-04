@@ -7,14 +7,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -29,7 +32,7 @@ public class DisplayActivity extends ActionBarActivity {
     private CheckListObject checkListObjectNew = new CheckListObject();
     private ArrayList<String> localNewCache = new ArrayList<>();
     private ArrayList<String> localOldCache = new ArrayList<>();
-
+    private Button b;
     private Calendar calendar;
     private int notifID = 0;
 
@@ -57,7 +60,13 @@ public class DisplayActivity extends ActionBarActivity {
         notifID = db.getId(temp);
 
         ListView newListView = (ListView) findViewById(R.id.display_list);
-
+        b = (Button) findViewById(R.id.button345);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createAddDialog().show();
+            }
+        });
         DisplayAdapter pendingTaskAdapter = new DisplayAdapter(this, localNewCache, false);
         newListView.setAdapter(pendingTaskAdapter);
         newListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -74,7 +83,8 @@ public class DisplayActivity extends ActionBarActivity {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView t = (TextView) view.findViewById(R.id.taskName);
                 String s = t.getText().toString();
-                createDeleteDialog(s).show();
+                //modifyNewTask("complete assess","complete sem");
+                createDeleteDialog(s,true).show();
 
                 return true;
             }
@@ -98,18 +108,66 @@ public class DisplayActivity extends ActionBarActivity {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView t = (TextView) view.findViewById(R.id.name);
                 String s = t.getText().toString();
-                createDeleteDialog(s).show();
-
+                createDeleteDialog(s,false).show();
+                //modifyDoneTask("waste","dhendam");
                 return true;
             }
         });
+
+
         TextView tV = (TextView) findViewById(R.id.checkListTitle);
         tV.setText(checkListObjectNew.title);
 
         db.close();
     }
+    public AlertDialog createAddDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add new item");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        builder.setView(input);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                final String m_Text = input.getText().toString();
+                addTask(m_Text);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        return builder.create();
+    }
+    public AlertDialog createModifyDialog(final String temp,final Boolean b){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter the new item name");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                final String m_Text = input.getText().toString();
+                if(b==false)
+                modifyDoneTask(temp,m_Text);
+                else
+                modifyNewTask(temp,m_Text);
 
-    public AlertDialog createDeleteDialog(String task) {
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        return builder.create();
+    }
+
+    public AlertDialog createDeleteDialog(String task,final Boolean b) {
         AlertDialog.Builder alb = new AlertDialog.Builder(this);
         alb.setMessage("Delete Task");
         TextView tV = new TextView(this);
@@ -129,9 +187,12 @@ public class DisplayActivity extends ActionBarActivity {
                 deleteTask(temp);
             }
         });
-
-        alb.setNegativeButton("No", null);
-
+        alb.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                createModifyDialog(temp,b).show();
+            }
+        });
         return alb.create();
     }
     public void updateUI() {
@@ -173,7 +234,42 @@ public class DisplayActivity extends ActionBarActivity {
 
         builder.create().show();
     }
+    public void modifyNewTask(String temp,String newname){
+        DatabaseHelper db = new DatabaseHelper(DisplayActivity.this);
+        db.deleteNewTask(temp);
+        localNewCache.remove(temp);
+        localNewCache.add(newname);
+        ArrayList<String> singleItem = new ArrayList<>();
+        singleItem.add(newname);
 
+        db.addNewList(new CheckListObject(checkListObjectNew.title, singleItem));
+        updateUI();
+        db.close();
+
+    }
+    public void modifyDoneTask(String temp,String newname){
+        DatabaseHelper db = new DatabaseHelper(DisplayActivity.this);
+        db.deleteOldTask(temp);
+        localOldCache.remove(temp);
+        localOldCache.add(newname);
+        ArrayList<String> singleItem = new ArrayList<>();
+        singleItem.add(newname);
+
+        db.addNewList(new CheckListObject(checkListObjectOld.title, singleItem));
+        updateUI();
+        db.close();
+
+    }
+    public void addTask(String newname)
+    {
+        DatabaseHelper db = new DatabaseHelper(DisplayActivity.this);
+        ArrayList<String> singleItem = new ArrayList<>();
+        singleItem.add(newname);
+        localNewCache.add(newname);
+        db.addNewList(new CheckListObject(checkListObjectNew.title, singleItem));
+        updateUI();
+        db.close();
+    }
     public void deleteTask(String temp) {
         DatabaseHelper db = new DatabaseHelper(DisplayActivity.this);
         db.deleteNewTask(temp);
@@ -261,6 +357,11 @@ public class DisplayActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action:
+                if(localNewCache.isEmpty())
+                {
+                    Toast.makeText(this, "Can't set alarm. All tasks completed", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Set date");
 

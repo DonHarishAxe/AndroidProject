@@ -1,20 +1,15 @@
 package ctf.task.task3;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.DataSetObserver;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -112,8 +107,6 @@ public class CreateNewList extends ActionBarActivity {
                 Intent noList = new Intent(this, HomeActivity.class);
                 startActivity(noList);
                 finish();
-                return true;
-            case R.id.action_settings:
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

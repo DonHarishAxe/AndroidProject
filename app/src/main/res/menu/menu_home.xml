@@ -1,7 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context="ctf.task.task3.HomeActivity">
-    <item android:id="@+id/action_settings" android:title="Add"
-        android:orderInCategory="1" app:showAsAction="always" />
+    <item android:id="@+id/merge"
+        android:icon="@drawable/plus"
+        android:title="Merge"
+        android:orderInCategory="2"
+        app:showAsAction="always" />
 
 </menu>
